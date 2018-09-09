@@ -36,3 +36,6 @@ For more information see ImplementationArchitecture.pdf
 
     docker-compose -f src/main/docker/app.yml logs -f
     
+### Example how the application looks like
+
+![Example](https://raw.githubusercontent.com/kalverk/action-monitor/master/example.png)
