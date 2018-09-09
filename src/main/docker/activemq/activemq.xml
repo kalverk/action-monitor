@@ -1,0 +1,73 @@
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <value>file:${activemq.conf}/credentials.properties</value>
+        </property>
+    </bean>
+
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="${BROKER_NAME}" dataDirectory="${activemq.data}">
+
+        <managementContext>
+            <managementContext createConnector="false"/>
+        </managementContext>
+
+        <persistenceAdapter>
+            <jdbcPersistenceAdapter dataDirectory="activemq-data"
+                                    dataSource="#mysql-ds"
+                                    useDatabaseLock="false"
+                                    createTablesOnStartup="true">
+                <statements>
+                    <statements stringIdDataType="VARCHAR(128)"
+                                containerNameDataType="VARCHAR(128)"
+                                msgIdDataType="VARCHAR(128)"/>
+                </statements>
+            </jdbcPersistenceAdapter>
+        </persistenceAdapter>
+
+        <systemUsage>
+            <systemUsage>
+                <memoryUsage>
+                    <memoryUsage percentOfJvmHeap="70"/>
+                </memoryUsage>
+                <storeUsage>
+                    <storeUsage limit="1gb"/>
+                </storeUsage>
+                <tempUsage>
+                    <tempUsage limit="1gb"/>
+                </tempUsage>
+            </systemUsage>
+        </systemUsage>
+
+        <transportConnectors>
+            <transportConnector name="openwire" uri="nio://0.0.0.0:61616" updateClusterClients="false"/>
+        </transportConnectors>
+
+        <shutdownHooks>
+            <bean xmlns="http://www.springframework.org/schema/beans"
+                  class="org.apache.activemq.hooks.SpringContextHook"/>
+        </shutdownHooks>
+
+        <destinationPolicy>
+            <policyMap>
+                <policyEntries>
+                    <policyEntry queue=">" consumersBeforeDispatchStarts="6" timeBeforeDispatchStarts="2000"/>
+                </policyEntries>
+            </policyMap>
+        </destinationPolicy>
+    </broker>
+
+    <bean id="mysql-ds" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://${MYSQL_HOST}/${MYSQL_DB}?relaxAutoCommit=true"/>
+        <property name="username" value="${MYSQL_USERNAME}"/>
+        <property name="password" value="${MYSQL_PASSWORD}"/>
+        <property name="poolPreparedStatements" value="true"/>
+    </bean>
+
+    <import resource="jetty.xml"/>
+</beans>

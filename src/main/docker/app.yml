@@ -1,0 +1,34 @@
+version: '2'
+services:
+  app:
+    image: app
+    environment:
+    - ACTIVE_MQ_URL=tcp://activemq:61616
+    - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/messages
+    ports:
+    - 8080:8080
+    depends_on:
+    - "activemq"
+    - "mysql-db"
+  activemq:
+    build: ./activemq
+    image: activemq
+    environment:
+    - MYSQL_HOST=mysql-db
+    - MYSQL_DB=messages
+    - MYSQL_USERNAME=user
+    - MYSQL_PASSWORD=user
+    ports:
+    - "61616:61616"
+    - "8161:8161"
+    depends_on:
+    - "mysql-db"
+  mysql-db:
+    image: mysql
+    ports:
+    - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: messages
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
